@@ -25,7 +25,7 @@ FOG_COLOR_FALLBACK = (222, 220, 214, 240) # Cor sólida da névoa caso a imagem 
 WHITE = (255, 255, 255)
 GOLD = (255, 215, 0)
 BLACK = (0, 0, 0)
-POI_ICON_SIZE = (74, 74) # Tamanho padrão para os ícones no mapa
+POI_ICON_SIZE = (64, 64) # Tamanho padrão para os ícones no mapa
 
 # --- Caminhos dos ficheiros agora incluem a pasta 'assets' ---
 ASSETS_FOLDER = 'assets'
@@ -33,7 +33,7 @@ FONT_REGULAR_FILE = os.path.join(ASSETS_FOLDER, 'Rubik-Regular.ttf')
 FONT_TITLE_FILE = os.path.join(ASSETS_FOLDER, 'Rubik-Black.ttf')
 ICON_FILE = os.path.join(ASSETS_FOLDER, 'icone-araucaria.png')
 MAP_FILE = os.path.join(ASSETS_FOLDER, 'mapa_curitiba.png')
-FOG_IMAGE_FILE = os.path.join(ASSETS_FOLDER, 'fog.png') # Imagem da névoa
+FOG_IMAGE_FILE = os.path.join(ASSETS_FOLDER, 'fog.png') 
 
 
 # --- Evento Personalizado para Revelar a Névoa ---
@@ -74,8 +74,8 @@ class RevealAnimation:
 
 # --- Dados dos Pontos Turísticos (Exemplos) ---
 PONTOS_TURISTICOS_DATA = [
-    { "id": "praca_tiradentes", "nome": "Praça Tiradentes", "pos": (8935, 5691), "descricao": "É a principal de Curitiba, dominada pela Catedral Basílica Menor de Nossa Senhora da Luz, centenária em 1993. Nesta região, em 29 de março de 1693, foi fundada Curitiba. Antigamente conhecida como Largo da Matriz, a praça é o marco zero da cidade.", "imagem_path": "" },
-    { "id": "rua_flores", "nome": "Rua das Flores", "pos": (9119, 5683), "descricao": "Trecho da principal rua de Curitiba, foi a primeira rua de pedestres do país e um dos marcos da cidade. Concentra lojas, cafés e uma agitação permanente. Ainda tem a Av. Luiz Xavier - a menor do mundo, a Boca Maldita - uma tribuna ao ar livre - e o Palácio Avenida, cenário dos espetáculos de Natal.", "imagem_path": "" },
+    { "id": "praca_tiradentes", "nome": "Praça Tiradentes", "pos": (8935, 5691), "descricao": "Localizada no coração do centro histórico de Curitiba, a Praça Tiradentes é um marco da cidade. É cercada por importantes edifícios históricos e é um ponto de encontro popular para eventos culturais e sociais. É a principal de Curitiba, dominada pela Catedral Basílica Menor de Nossa Senhora da Luz, centenária em 1993. Nesta região, em 29 de março de 1693, foi fundada Curitiba. Antigamente conhecida como Largo da Matriz, a praça é o marco zero da cidade. Em 1880, em função da visita do Imperador Pedro II ao Paraná, o Largo passou a se chamar D. Pedro II. Nove anos mais tarde, com a Proclamação da República, recebeu o nome atual de Praça Tiradentes. É um importante terminal de transporte coletivo.", "imagem_path": "" },
+    { "id": "rua_flores", "nome": "Rua das Flores", "pos": (9119, 5683), "descricao": "A Rua das Flores é uma charmosa rua de pedestres no centro de Curitiba, famosa por suas flores e árvores. É um ótimo lugar para passear, fazer compras e apreciar a arquitetura local.", "imagem_path": "" },
     { "id": "rua_24_horas", "nome": "Rua 24 Horas", "pos": (8760, 5904), "descricao": "Uma rua coberta que funciona 24 horas por dia, oferecendo uma variedade de lojas, restaurantes e cafés. É um local popular tanto para moradores quanto para turistas.", "imagem_path": "" },
     { "id": "museu_ferroviario", "nome": "Museu Ferroviário", "pos": (9178, 6029), "descricao": "O Museu Ferroviário de Curitiba é dedicado à história das ferrovias no Brasil. O museu abriga uma coleção de locomotivas, vagões e outros artefatos ferroviários, além de exposições sobre a história do transporte ferroviário.", "imagem_path": ""},
     { "id": "teatro_paiol", "nome": "Teatro Paiol", "pos": (9481, 6451), "descricao": "Localizado em um antigo paiol de pólvora, o Teatro Paiol é um espaço cultural que abriga peças de teatro, shows e eventos culturais. É conhecido por sua acústica excepcional e ambiente intimista.", "imagem_path": "" },
@@ -258,7 +258,6 @@ class InfoCard:
         title_rect = title_text.get_rect(centerx=self.base_surface.get_width() // 2, top=20)
         self.base_surface.blit(title_text, title_rect)
         try:
-            # --- ALTERAÇÃO AQUI: Carrega a imagem do POI ---
             if self.poi.imagem_path:
                 image_path = resource_path(os.path.join(ASSETS_FOLDER, self.poi.imagem_path))
                 image = pygame.image.load(image_path).convert()
@@ -313,8 +312,8 @@ class InfoCard:
         
         final_surface = self.base_surface.copy()
         
-        text_area = self.full_text_surface.subsurface((0, self.scroll_y, self.desc_viewport_rect.width, self.desc_viewport_rect.height))
-        final_surface.blit(text_area, self.desc_viewport_rect.topleft)
+        text_viewport = final_surface.subsurface(self.desc_viewport_rect)
+        text_viewport.blit(self.full_text_surface, (0, -self.scroll_y))
         
         pygame.draw.rect(final_surface, self.button_color, self.button_rect_on_card, border_radius=40)
         button_text = self.body_font.render("Concluído", True, BLACK)
@@ -352,7 +351,7 @@ class Game:
             self.font_card_title = pygame.font.SysFont('arial', 32, bold=True)
             self.font_card_body = pygame.font.SysFont('arial', 20)
 
-        self._load_poi_icons() # Carrega os ícones personalizados
+        self._load_poi_icons() 
 
         try:
             map_path = resource_path(MAP_FILE)
@@ -536,8 +535,11 @@ class Game:
                     self.camera.x -= dx * scale
                     self.camera.y -= dy * scale
                     self.check_camera_bounds()
-            elif event.type == pygame.MOUSEWHEEL and not self.active_card:
-                self.handle_zoom(event.y, pygame.mouse.get_pos())
+            elif event.type == pygame.MOUSEWHEEL:
+                if self.active_card:
+                    self.active_card.handle_scroll(event)
+                else:
+                    self.handle_zoom(event.y, pygame.mouse.get_pos())
 
     def update_all(self):
         """Atualiza a lógica de todos os objetos do jogo."""
